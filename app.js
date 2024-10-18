@@ -54,18 +54,31 @@ app.get('/login', (req, res) => {
   res.sendFile(__dirname + '/public/login.htm');
 });
 
-app.post('/register', (req, res) => {
-  const { name, email, password } = req.body;
-  const newUser = new User({ name, email, password });
-  bcrypt.hash(newUser.password, 10, (err, hash) => {
-    if (err) { throw err; }
-    newUser.password = hash;
-    newUser.save((err) => {
-      if (err) { throw err; }
-      res.send('User created successfully!');
-    });
-  });
+// app.post('/register', (req, res) => {
+//   const { name, email, password } = req.body;
+//   const newUser = new User({ name, email, password });
+//   bcrypt.hash(newUser.password, 10, (err, hash) => {
+//     if (err) { throw err; }
+//     newUser.password = hash;
+//     newUser.save((err) => {
+//       if (err) { throw err; }
+//       res.send('User created successfully!');
+//     });
+//   });
+// });
+// callback() resolve
+app.post('/register', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    const newUser = new User({ name, email, password });
+    await newUser.save();
+    res.send('User created successfully!');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error creating user');
+  }
 });
+
 
 app.post('/login', passport.authenticate('local', {
   successRedirect: '/success',
