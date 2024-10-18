@@ -51,38 +51,6 @@ app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Passport.js configuration
-passport.use(new LocalStrategy({
-  usernameField: 'email',
-  passwordField: 'password'
-}, async (email, password, done) => {
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return done(null, false, { message: 'Invalid email or password' });
-    }
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return done(null, false, { message: 'Invalid email or password' });
-    }
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-}));
-
-// app.post('/register', (req, res) => {
-//   const { name, email, password } = req.body;
-//   const newUser = new User({ name, email, password });
-//   bcrypt.hash(newUser.password, 10, (err, hash) => {
-//     if (err) { throw err; }
-//     newUser.password = hash;
-//     newUser.save((err) => {
-//       if (err) { throw err; }
-//       res.send('User created successfully!');
-//     });
-//   });
-// });
 // callback() resolve
 app.post('/register', async (req, res) => {
   try {
@@ -102,20 +70,6 @@ app.post('/login', passport.authenticate('local', {
   failureRedirect: '/login',
   failureFlash: true // just added to display error msg
 }));
-// app.post('/login', async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     const user = await User.findOne({ email });
-//     if (!user || !(await bcrypt.compare(password, user.password))) {
-//       return res.status(401).send('Invalid credentials');
-//     }
-//     req.session.userId = user._id;
-//     res.redirect('/success');
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send('Error logging in');
-//   }
-// });
 
 app.get('/success', (req, res) => {
   res.send('Login successful!');
@@ -144,7 +98,7 @@ app.get('/success', (req, res) => {
 // Home Route (/):
 
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.htms');
+  res.sendFile(__dirname + '/public/index.htm');
 });
 
 const port = 3000;
