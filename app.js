@@ -1,32 +1,15 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const passport = require('passport');
+// const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('./models/User');
 const database = require('./config/database');
 const bcrypt = require('bcryptjs');
+const flash = require('connect-flash');
+const session = require('express-session');
+const passport = require('./config/passport');
 
-// Passport.js configuration
-passport.use(new LocalStrategy({
-  usernameField: 'email',
-  passwordField: 'password'
-}, (email, password, done) => {
-  User.findOne({ email: email }, (err, user) => {
-    if (err) { return done(err); }
-    if (!user) {
-      return done(null, false, { message: 'Invalid email or password.' });
-    }
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err) { return done(err); }
-      if (isMatch) {
-        return done(null, user);
-      } else {
-        return done(null, false, { message: 'Invalid email or password.' });
-      }
-    });
-  });
-}));
 
 // Database connection
 database.connect();
@@ -53,6 +36,40 @@ app.get('/register', (req, res) => {
 app.get('/login', (req, res) => {
   res.sendFile(__dirname + '/public/login.htm');
 });
+
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
+
+app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Passport.js configuration
+passport.use(new LocalStrategy({
+  usernameField: 'email',
+  passwordField: 'password'
+}, async (email, password, done) => {
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return done(null, false, { message: 'Invalid email or password' });
+    }
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return done(null, false, { message: 'Invalid email or password' });
+    }
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+}));
 
 // app.post('/register', (req, res) => {
 //   const { name, email, password } = req.body;
@@ -82,11 +99,52 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', passport.authenticate('local', {
   successRedirect: '/success',
-  failureRedirect: '/login'
+  failureRedirect: '/login',
+  failureFlash: true // just added to display error msg
 }));
+// app.post('/login', async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const user = await User.findOne({ email });
+//     if (!user || !(await bcrypt.compare(password, user.password))) {
+//       return res.status(401).send('Invalid credentials');
+//     }
+//     req.session.userId = user._id;
+//     res.redirect('/success');
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send('Error logging in');
+//   }
+// });
 
 app.get('/success', (req, res) => {
   res.send('Login successful!');
+});
+
+//Logout Route (/logout):
+
+app.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+    }
+    res.redirect('/');
+  });
+});
+
+// Success Route (/success):
+
+app.get('/success', (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect('/login');
+  }
+  res.send('Login successful!');
+});
+
+// Home Route (/):
+
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.htms');
 });
 
 const port = 3000;

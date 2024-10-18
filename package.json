@@ -2,8 +2,10 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
+    "connect-flash": "^0.1.1",
     "express": "^4.21.1",
     "express-router": "^0.0.1",
+    "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.1",
     "passport": "^0.7.0",
