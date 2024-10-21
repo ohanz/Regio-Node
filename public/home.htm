@@ -22,5 +22,32 @@ document.getElementById('paras').innerHTML = `
 //   <span style="font-weight: bold;">Email: ${email}</span>
 // `;
 </script>
+
+<br/><br/>
+<div>
+    <!-- <p><a href="/logout">Log Out Here.</a></p> -->
+    <p id="logout-button" style="color: rgb(185, 23, 23); text-decoration: underline;">Log Out Here.</p>
+
+</div>
+
+<script>
+    document.getElementById('logout-button').addEventListener('click', logout);
+    function logout() {
+  fetch('/logout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({}) // Empty body, adjust according to server requirements
+  })
+  .then((response) => response.text())
+  .then((html) => {
+    sessionStorage.clear(); // Clear session data
+    localStorage.clear(); // Clear local storage
+    window.location.replace('/'); // Redirect to homepage
+  })
+  .catch((error) => console.error(error));
+}
+</script>
 </body>
 </html>

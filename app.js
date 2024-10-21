@@ -108,7 +108,16 @@ app.get('/logout', (req, res) => {
     if (err) {
       console.error(err);
     }
-    res.redirect('/');
+    // res.redirect('/');
+    // res.status(302).redirect('/');
+    // res.set("Cache-Control", "no-cache, no-store");
+    // res.redirect('/');
+    // res.set("Cache-Control", "no-cache, no-store");
+    // res.set("Expires", "-1");
+    // res.status(302).redirect('/');
+    // res.clearCookie('connect.sid', { path: '/' }); // Adjust cookie name
+    res.clearCookie(req.session.cookie.name, { path: '/' });
+    res.status(200).send('Logged out successfully'); // Adjust response
   });
 });
 
