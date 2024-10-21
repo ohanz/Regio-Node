@@ -129,8 +129,64 @@ function checkAuthentication(req, res, next) {
 
 // Home Route (/):
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.htm');
+//   app.get('/home', checkAuthentication, (req, res) => { 
+//     // res.sendFile(__dirname + '/public/home.htm');
+//   const userId = req.session.userId;
+//   User.findById(userId, (err, user) => {
+//     if (err) {
+//       console.error(err);
+//       res.status(500).send('Error fetching user data');
+//     } else {
+//       res.redirect(`/home?username=${user.username}&email=${user.email}`);
+//     }
+//   });
+// });
+// app.get('/home', checkAuthentication, async (req, res) => {
+//   try {
+//     const userId = req.session.userId;
+//     const user = await User.findById(userId, 'name email'); // exclude sensitive fields
+//     if (!user) {
+//       res.status(404).send('User not found');
+//     } else {
+//       res.json({ user: user });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Error fetching user data');
+//   }
+// });
+
+app.get('/home', checkAuthentication, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const user = await User.findById(userId, 'name email');
+    if (!user) {
+      res.status(404).send('User not found');
+      return;
+    }
+    res.redirect(`/homepage?name=${user.name}&email=${user.email}`);
+  } catch (error) {
+    // console.error(error);
+    console.error('Error fetching user data:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.get('/homepage', (req, res) => {
+  // res.sendFile(__dirname + '/public/home.htm');
+  try {
+    const { name, email } = req.query;
+
+    if (!name || !email) {
+      res.status(400).send('Invalid query parameters');
+      return;
+    }
+
+    res.sendFile(__dirname + '/public/home.htm');
+  } catch (error) {
+    console.error('Error serving homepage:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 const port = 3000;

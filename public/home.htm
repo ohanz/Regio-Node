@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><title>Home | Welcome, Hyper</title></head>
+<body>
+<h1>Welcome, Hyper!</h1>
+<br />
+<h1 id="username"></h1>
+<p id="email"></p>
+<div id="paras"></p>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const name = urlParams.get('name');
+const email = urlParams.get('email');
+document.getElementById('username').innerText = `Hye, ${name}!`;
+document.getElementById('email').innerHTML = `Signed Email: <b>${email}</b>`;
+document.getElementById('paras').innerHTML = `
+ <span style="font-weight: bold;">Find more in coming updates..</span>
+`;
+// document.getElementById('username').innerHTML = `
+//   <span style="font-weight: bold;">Welcome, ${name}!</span>
+//   <span style="font-weight: bold;">Email: ${email}</span>
+// `;
+</script>
+</body>
+</html>
