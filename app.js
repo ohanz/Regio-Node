@@ -65,15 +65,41 @@ app.post('/register', async (req, res) => {
 });
 
 
-app.post('/login', passport.authenticate('local', {
-  successRedirect: '/success',
-  failureRedirect: '/login',
-  failureFlash: true // just added to display error msg
-}));
+// app.post('/login', passport.authenticate('local', {
+//   successRedirect: '/success',
+//   failureRedirect: '/login',
+//   failureFlash: true // just added to display error msg
+// }));
 
-app.get('/success', (req, res) => {
-  res.send('Login successful!');
+// Modified app.js: Added session to authenticate user
+app.post('/login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.redirect('/login');
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      req.session.userId = user._id;
+      res.redirect('/success');
+    });
+  })(req, res, next);
 });
+
+
+// app.get('/success', (req, res) => {
+//   res.send('Login successful!');
+// });
+
+app.get('/success', checkAuthentication, (req, res) => {
+  // res.send('Login successful!'); Legacy
+  res.sendFile(__dirname + '/public/success.htm');
+});
+
 
 //Logout Route (/logout):
 
@@ -86,14 +112,20 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// Success Route (/success):
-
-app.get('/success', (req, res) => {
+function checkAuthentication(req, res, next) {
   if (!req.session.userId) {
     return res.redirect('/login');
   }
-  res.send('Login successful!');
-});
+  next();
+}
+// Success Route (/success):
+
+// app.get('/success', (req, res) => {
+//   if (!req.session.userId) {
+//     return res.redirect('/login');
+//   }
+//   res.send('Login successful!');
+// });
 
 // Home Route (/):
 
